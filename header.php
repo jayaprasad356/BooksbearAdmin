@@ -363,7 +363,7 @@ $res_logo = $db->getResult();
                     <a href="notification.php"> <i class="fa fa-share-square-o"></i><span>Send notification</span>
                     </a>
                 </li>
-                <li class="treeview d-none">
+                <li class="treeview">
                     <a href="#">
                         <i class="fa fa-wrench"></i>
                         <span>Web Front-End Settings</span>

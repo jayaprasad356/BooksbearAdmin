@@ -89,6 +89,10 @@ $logo = $fn->get_settings('logo');
                             <input type="text" class="form-control" name="store_name" id="store_name" required>
                         </div>
                         <div class="form-group">
+                            <label for="">Full Address</label>
+                            <input type="text" class="form-control" name="street" required >
+                        </div>
+                        <div class="form-group">
                             <label for="">Tax Name (Optional)</label>
                             <input type="text" class="form-control" name="tax_name" >
                         </div>

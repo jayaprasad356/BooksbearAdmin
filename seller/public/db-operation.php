@@ -4,8 +4,11 @@ $db = new Database();
 $db->connect();
 $db->sql("SET NAMES 'utf8'");
 session_start();
-$auth_username = $db->escapeString($_SESSION["seller_name"]);
-$session_seller_id = $db->escapeString($_SESSION["seller_id"]);
+if (isset($_SESSION['seller_id']) && isset($_SESSION['seller_name'])) {
+    $auth_username = $db->escapeString($_SESSION["seller_name"]);
+    $session_seller_id = $db->escapeString($_SESSION["seller_id"]);
+}
+
 
 include('../../includes/variables.php');
 include_once('../../includes/custom-functions.php');
@@ -60,6 +63,7 @@ if (isset($_POST['add_seller']) && $_POST['add_seller'] == 1) {
     $tax_name = $db->escapeString($fn->xss_clean($_POST['tax_name']));
     $tax_number = $db->escapeString($fn->xss_clean($_POST['tax_number']));
     $pan_number = $db->escapeString($fn->xss_clean($_POST['pan_number']));
+    $street = $db->escapeString($fn->xss_clean($_POST['street']));
     $commission = 0;
     $status = '2';
 
@@ -131,7 +135,7 @@ if (isset($_POST['add_seller']) && $_POST['add_seller'] == 1) {
             return false;
         }
     }
-    $sql = "INSERT INTO `seller`(`name`, `store_name`, `email`, `mobile`, `password`, `logo`,`commission`,`status`,`national_identity_card`,`address_proof`,`pan_number`,`tax_name`,`tax_number`,`slug`) VALUES ('$name','$store_name','$email', '$mobile', '$password','$filename', '$commission','$status','$national_id_card','$address_proof','$pan_number','$tax_name','$tax_number','$slug')";
+    $sql = "INSERT INTO `seller`(`name`, `store_name`, `email`, `mobile`, `password`, `logo`,`commission`,`status`,`national_identity_card`,`address_proof`,`pan_number`,`tax_name`,`tax_number`,`slug`,`street`) VALUES ('$name','$store_name','$email', '$mobile', '$password','$filename', '$commission','$status','$national_id_card','$address_proof','$pan_number','$tax_name','$tax_number','$slug','$street')";
 
     if ($db->sql($sql)) {
         echo '<label class="alert alert-success">Seller Added Successfully!</label>';

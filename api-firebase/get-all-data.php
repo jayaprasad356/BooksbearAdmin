@@ -257,10 +257,49 @@ foreach ($result as $row) {
     $tempRow['seller_address'] = $seller_address;
     $res_seller[] = $tempRow;
 }
+// Settings
+$sql = "select variable, value from `settings`";
+$db->sql($sql);
+$res = $db->getResult();
+
+if (!empty($res)) {
+    foreach ($res as $k => $v) {
+        if ($v['variable'] == "system_timezone") {
+            $system_timezones = (array)json_decode($v['value']);
+            $system_timezone = $fn->replaceArrayKeys($system_timezones);
+            foreach ($system_timezone as $k => $v) {
+                $settings[$k] = $v;
+            }
+            /* Setting deault values if not set */
+            $settings['min_refer_earn_order_amount'] = (!isset($settings['min_refer_earn_order_amount'])) ? 1 : $settings['min_refer_earn_order_amount'];
+            $settings['refer_earn_bonus'] = (!isset($settings['refer_earn_bonus'])) ? 0 : $settings['refer_earn_bonus'];
+            $settings['max_refer_earn_amount'] = (!isset($settings['max_refer_earn_amount'])) ? 0 : $settings['max_refer_earn_amount'];
+            $settings['minimum_withdrawal_amount'] = (!isset($settings['minimum_withdrawal_amount'])) ? 1 : $settings['minimum_withdrawal_amount'];
+            $settings['max_product_return_days'] = (!isset($settings['max_product_return_days'])) ? 0 : $settings['max_product_return_days'];
+            $settings['delivery_boy_bonus_percentage'] = (!isset($settings['delivery_boy_bonus_percentage'])) ? 1 : $settings['delivery_boy_bonus_percentage'];
+            $settings['low_stock_limit'] = (!isset($settings['low_stock_limit'])) ? 10 : $settings['low_stock_limit'];
+            $settings['user_wallet_refill_limit'] = (!isset($settings['user_wallet_refill_limit'])) ? 100000 : $settings['user_wallet_refill_limit'];
+            $settings['delivery_charge'] = (!isset($settings['delivery_charge'])) ? 0 : $settings['delivery_charge'];
+            $settings['min_order_amount'] = (!isset($settings['min_order_amount'])) ? 1 : $settings['min_order_amount'];
+            $settings['min_amount'] = (!isset($settings['min_amount'])) ? 1 : $settings['min_amount'];
+        } else {
+            $settings[$v['variable']] = $v['value'];
+        }
+    }
+}
+
+// Social Media
+$sql_query = "SELECT * FROM social_media ORDER BY id ASC ";
+$db->sql($sql_query);
+$social_media = $db->getResult();
+
 $response['categories'] = (!empty($res_categories)) ? $res_categories : [];
 $response['slider_images'] = (!empty($slider_images)) ? $slider_images : [];
 $response['sections'] = (!empty($featured_sections)) ? $featured_sections : [];
 $response['offer_images'] = (!empty($offer_images)) ? $offer_images : [];
 $response['seller'] = (!empty($res_seller)) ? $res_seller : [];
+$response['settings'] = (!empty($settings)) ? $settings : [];
+$response['social_media'] = (!empty($social_media)) ? $social_media : [];
 
 print_r(json_encode($response));
+
