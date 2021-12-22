@@ -1439,11 +1439,12 @@ class custom_functions
             return false;
         }
         if (!empty($address_data)) {
-            $area = $this->get_data($columns = ['name'], 'id=' . $address_data[0]['area_id'], 'area');
-            $sql = "SELECT a.*,c.name as city_name,p.pincode FROM `area` a LEFT JOIN pincodes p on p.id=a.pincode_id LEFT JOIN cities c on c.id=a.city_id where a.id= " . $address_data[0]['area_id'];
-            $this->db->sql($sql);
-            $res_city = $this->db->getResult();
-            $user_address = $address_data[0]['address'] . "," . $address_data[0]['landmark'] . "," . $res_city[0]['city_name'] . "," . $area[0]['name'] . "," . $address_data[0]['state'] . "," . $address_data[0]['country'] . "," . "Pincode:" . $res_city[0]['pincode'];
+            // $area = $this->get_data($columns = ['name'], 'id=' . $address_data[0]['area_id'], 'area');
+            // $sql = "SELECT a.*,c.name as city_name,p.pincode FROM `area` a LEFT JOIN pincodes p on p.id=a.pincode_id LEFT JOIN cities c on c.id=a.city_id where a.id= " . $address_data[0]['area_id'];
+            // $this->db->sql($sql);
+            // $res_city = $this->db->getResult();
+            //$user_address = $address_data[0]['address'] . "," . $address_data[0]['landmark'] . "," . $res_city[0]['city_name'] . "," . $area[0]['name'] . "," . $address_data[0]['state'] . "," . $address_data[0]['country'] . "," . "Pincode:" . $res_city[0]['pincode'];
+            $user_address = $address_data[0]['address'] . "," . $address_data[0]['landmark']. $address_data[0]['state'] . "," . $address_data[0]['country'];
             $order_data = array('user_address' => $user_address, 'mobile' => $address_data[0]['mobile'], 'latitude' => $address_data[0]['latitude'], 'longitude' => $address_data[0]['longitude'], 'pincode_id' => $address_data[0]['pincode_id'], 'area_id' => $address_data[0]['area_id']);
             return $order_data;
         } else {

@@ -94,12 +94,15 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     $final_total = $db->escapeString($function->xss_clean($_POST['final_total']));
     $payment_method = $db->escapeString($function->xss_clean($_POST['payment_method']));
     $address_id = $db->escapeString($function->xss_clean($_POST['address_id']));
+    
     $delivery_time = (isset($_POST['delivery_time'])) ? $db->escapeString($function->xss_clean($_POST['delivery_time'])) : "";
     $promo_code = (isset($_POST['promo_code']) && !empty($_POST['promo_code'])) ? $db->escapeString($function->xss_clean($_POST['promo_code'])) : "";
     $promo_discount = (isset($_POST['promo_discount']) && !empty($_POST['promo_discount'])) ? $db->escapeString($function->xss_clean($_POST['promo_discount'])) : 0;
+    
     $active_status = (isset($_POST['status']) && !empty($_POST['status'])) ? $db->escapeString($function->xss_clean($_POST['status'])) : 'received';
     $order_from = (isset($_POST['order_from']) && !empty($_POST['order_from'])) ? $db->escapeString($function->xss_clean($_POST['order_from'])) : 0;
-    $fnd_code = $db->escapeString($function->xss_clean($_POST['friends_code']));
+    $fnd_code = (isset($_POST['friends_code']) && !empty($_POST['friends_code'])) ? $db->escapeString($function->xss_clean($_POST['friends_code'])): "";
+    
 
     $status[] = array($active_status, date("d-m-Y h:i:sa"));
     $quantity = $function->xss_clean($_POST['quantity']);
@@ -140,6 +143,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
             exit();
         }
     }
+    
 
     /* check for wallet balance */
     if ($wallet_used == 'true') {
@@ -161,6 +165,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     }
     $walletvalue = ($wallet_used) ? $wallet_balance : 0;
     $order_status = $db->escapeString(json_encode($status));
+    
 
     /* getting user address data */
     $user_address = $function->get_user_address($address_id);
@@ -178,6 +183,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
         return false;
     }
     /* insert data into order table */
+    
     
     $sql = "INSERT INTO `orders`(`user_id`,`otp`,`mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `promo_code`,`promo_discount`, `final_total`, `payment_method`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`,`pincode_id`,`area_id`,`friends_code`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$order_total_tax_amt','$order_total_tax_per','$walletvalue','$promo_code','$promo_discount', '$final_total','$payment_method','$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from','$pincode_id','$area_id','$fnd_code')";
     
@@ -201,6 +207,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
         $function->update_wallet_balance($new_balance, $user_id, 'users');
         $wallet_txn_id = $function->add_wallet_transaction($order_id, 0, $user_id, 'debit', $wallet_balance, 'Used against Order Placement', 'wallet_transactions');
     }
+    
 
     /* process each product in order from variants of products */
     for ($i = 0; $i < count($item_details); $i++) {
@@ -270,12 +277,13 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     );
     if ($db->update('orders', $data, 'id=' . $order_id)) {
         $res = $db->getResult();
+        
         $response['error'] = false;
         $response['message'] = "Order placed successfully.";
         $response['order_id'] = $order_id;
         print_r(json_encode($response));
         /* send email notification for the order received */
-        if ($active_status == "received") {
+        if (isset($_POST['status']) && $active_status == "received") {
             $res = $function->get_data($columns = ['name', 'email', 'mobile', 'country_code'], 'id=' . $user_id, 'users');
             $to = $res[0]['email'];
             $mobile = $res[0]['mobile'];
@@ -323,6 +331,11 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
             send_email($support_email, $subject, $message);
             $function->send_order_update_notification($user_id, "Your order has been received", $message, 'order', $response['order_id']);
         }
+        // $response['error'] = true;
+        // $response['message'] = "Hi JP I am Good";
+        // print_r(json_encode($response));
+        // return false;
+        // exit();
         
     } else {
         $response['error'] = true;

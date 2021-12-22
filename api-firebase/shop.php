@@ -93,22 +93,22 @@ if (isset($_POST['accesskey'])) {
                 $where .= " AND p.category_id IN($category_id)";
             }
         }
-        if (isset($_POST['pincode']) && trim($_POST['pincode']) != "") {
+        // if (isset($_POST['pincode']) && trim($_POST['pincode']) != "") {
             
-                // get pincode id
-                $pincode_id = $fn-> get_pincode_id_by_pincode($pincode);
-                $pincode_id = $pincode_id[0]['id'];
-                // run query
-            //  echo   $where .=  " AND ((type='included' and FIND_IN_SET('$pincode_id', pincodes)) or type = 'all') OR ((type='excluded' and NOT FIND_IN_SET('$pincode_id', pincodes))) ";
+        //         // get pincode id
+        //         $pincode_id = $fn-> get_pincode_id_by_pincode($pincode);
+        //         $pincode_id = $pincode_id[0]['id'];
+        //         // run query
+        //     //  echo   $where .=  " AND ((type='included' and FIND_IN_SET('$pincode_id', pincodes)) or type = 'all') OR ((type='excluded' and NOT FIND_IN_SET('$pincode_id', pincodes))) ";
             
-            // $pincodes = explode(',', $_POST['pincode']);
-            // $pincode = implode(',', $pincodes);
-            if (empty($where)) {
-                $where .=  " where ((p.type='included' and FIND_IN_SET('$pincode_id', p.pincodes)) or p.type = 'all') OR ((p.type='excluded' and NOT FIND_IN_SET('$pincode_id', p.pincodes))) ";
-            } else {
-                $where .=  " AND ((p.type='included' and FIND_IN_SET('$pincode_id', p.pincodes)) or p.type = 'all') OR ((p.type='excluded' and NOT FIND_IN_SET('$pincode_id', p.pincodes))) ";
-            }
-        }
+        //     // $pincodes = explode(',', $_POST['pincode']);
+        //     // $pincode = implode(',', $pincodes);
+        //     if (empty($where)) {
+        //         $where .=  " where ((p.type='included' and FIND_IN_SET('$pincode_id', p.pincodes)) or p.type = 'all') OR ((p.type='excluded' and NOT FIND_IN_SET('$pincode_id', p.pincodes))) ";
+        //     } else {
+        //         $where .=  " AND ((p.type='included' and FIND_IN_SET('$pincode_id', p.pincodes)) or p.type = 'all') OR ((p.type='excluded' and NOT FIND_IN_SET('$pincode_id', p.pincodes))) ";
+        //     }
+        // }
 
         if (isset($_POST['sub-category']) && trim($_POST['sub-category']) != "") {
             $category_ids = explode(',', $_POST['sub-category']);
