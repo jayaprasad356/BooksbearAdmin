@@ -54,9 +54,29 @@ $pincode_id = (isset($_POST['pincode_id']) && is_numeric($_POST['pincode_id']) &
 $sql = "SELECT * FROM category WHERE status = 1 ORDER BY row_order ASC ";
 $db->sql($sql);
 $res_categories = $db->getResult();
+if (!empty($res_categories)) {
+    for ($i = 0; $i < count($res_categories); $i++) {
+        $res_categories[$i]['image'] = (!empty($res_categories[$i]['image'])) ? DOMAIN_URL . '' . $res_categories[$i]['image'] : '';
+        $res_categories[$i]['web_image'] = (!empty($res_categories[$i]['web_image'])) ? DOMAIN_URL . '' . $res_categories[$i]['web_image'] : '';
+    }
+    $tmp = [];
+    foreach ($res_categories as $r) {
+        if (isset($r['product_rating'])) {
+            unset($r['product_rating']);
+        }
+        $r['childs'] = [];
 
-for ($i = 0; $i < count($res_categories); $i++) {
-    $res_categories[$i]['image'] = (!empty($res_categories[$i]['image'])) ? DOMAIN_URL . '' . $res_categories[$i]['image'] : '';
+        $db->sql("SELECT * FROM subcategory WHERE category_id = '" . $r['id'] . "' ORDER BY id DESC");
+        $childs = $db->getResult();
+        if (!empty($childs)) {
+            for ($i = 0; $i < count($childs); $i++) {
+                $childs[$i]['image'] = (!empty($childs[$i]['image'])) ? DOMAIN_URL . '' . $childs[$i]['image'] : '';
+                $r['childs'][$childs[$i]['slug']] = (array)$childs[$i];
+            }
+        }
+        $tmp[] = $r;
+    }
+    $res_categories = $tmp;
 }
 // slider images
 $sql = 'SELECT * from slider order by id DESC';

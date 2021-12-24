@@ -76,6 +76,7 @@ if ($permissions['orders']['read'] == 1) {
                                                 <th data-field="qty" data-sortable='false' data-visible="false">Qty</th>
                                                 <th data-field="name">U.Name</th>
                                                 <th data-field="seller_name">Sellers</th>
+                                                <th data-field="email">Email</th>
                                                 <th data-field="mobile" data-visible="true" data-footer-formatter="totalFormatter">Mob.</th>
                                                 <th data-field="order_note" data-sortable='false' data-visible="false">Order Note</th>
                                                 <th data-field="items" data-sortable='false' data-visible="false">Items</th>

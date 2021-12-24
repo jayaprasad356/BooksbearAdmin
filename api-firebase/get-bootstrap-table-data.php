@@ -93,7 +93,7 @@ if (isset($_GET['table']) && $_GET['table'] == 'orders') {
     $db->sql($sql);
     $res = $db->getResult();
     for ($i = 0; $i < count($res); $i++) {
-       $sql = "select oi.*,d.name as d_name,s.name as s_name, u.name as uname,oi.active_status as order_status from `order_items` oi 
+       $sql = "select oi.*,d.name as d_name,s.name as s_name, u.name as uname,u.email as uemail,oi.active_status as order_status from `order_items` oi 
 			    left join users u ON u.id=oi.user_id
                 left join delivery_boys d ON d.id=oi.delivery_boy_id
                 left join seller s ON s.id=oi.seller_id
@@ -161,6 +161,7 @@ if (isset($_GET['table']) && $_GET['table'] == 'orders') {
         $tempRow['id'] = $row['id'];
         $tempRow['user_id'] = $row['user_id'];
         $tempRow['name'] = (!empty($row['items'][0]['uname']))?$row['items'][0]['uname'] :" ";
+        $tempRow['email'] = (!empty($row['items'][0]['uemail']))?$row['items'][0]['uemail'] :" ";
         if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
             $tempRow['mobile'] = str_repeat("*", strlen($row['mobile']) - 3) . substr($row['mobile'], -3);
         } else {
