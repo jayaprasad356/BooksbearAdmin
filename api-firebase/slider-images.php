@@ -60,6 +60,7 @@ if ((isset($_POST['add-image'])) && ($_POST['add-image'] == 1)) {
 	$image_type = $db->escapeString($fn->xss_clean($_FILES['image']['type']));
 	$type = $db->escapeString($fn->xss_clean($_POST['type']));
 	$id = ($type != 'default')? $db->escapeString($fn->xss_clean($_POST[$type])) : "0";
+	$slide_url = (isset($_POST['slide_url']) && !empty(trim($_POST['slide_url']))) ? $db->escapeString(trim($fn->xss_clean($_POST['slide_url']))) : '';
 	
 	// create array variable to handle error
 	$error = array();
@@ -92,7 +93,7 @@ if ((isset($_POST['add-image'])) && ($_POST['add-image'] == 1)) {
 		
 		// insert new data to menu table
 		$upload_image = 'upload/slider/'.$image;
-		$sql = "INSERT INTO `slider`(`image`,`type`, `type_id`) VALUES ('$upload_image','".$type."','".$id."')";
+		$sql = "INSERT INTO `slider`(`image`,`type`, `type_id`,`slide_url`) VALUES ('$upload_image','".$type."','".$id."','".$slide_url."')";
 		$db->sql($sql);
 		$res = $db->getResult();
 		$sql="SELECT id FROM `slider` ORDER BY id DESC";

@@ -104,6 +104,7 @@ if (!empty($res_slider_image)) {
         $temp['type_id'] = $row['type_id'];
         $temp['name'] = $name;
         $temp['image'] = DOMAIN_URL . $row['image'];
+        $temp['slide_url'] = $row['slide_url'];
         $slider_images[] = $temp;
     }
 }

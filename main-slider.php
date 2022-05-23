@@ -212,6 +212,10 @@ $allowed = ALLOW_MODIFICATION;?>
                                     <label for="image">Slider Image : <small> ( Recommended Size : 1024 x 512 pixels )</small></label>
                                     <input type='file' name="image" id="image" required/> 
                                 </div>
+                                <div class="form-group">
+                                    <label for="">Slide URL</label>
+                                    <input type="text" class="form-control" name="slide_url" id="slide_url">
+                                </div>
                             </div>
                             <div class="box-footer">
                                 <input type="submit" id="submit_btn" class="btn-primary btn" value="Upload"/>
