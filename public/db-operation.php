@@ -10,6 +10,8 @@ include_once('../includes/custom-functions.php');
 $fn = new custom_functions;
 include_once('../includes/functions.php');
 $function = new functions;
+include_once('../library/shiprocket.php');
+$shiprocket = new Shiprocket();
 $permissions = $fn->get_permissions($_SESSION['id']);
 $config = $fn->get_configurations();
 $time_slot_config = $fn->time_slot_config();
@@ -37,7 +39,42 @@ if (ALLOW_MODIFICATION == 0 && !defined(ALLOW_MODIFICATION)) {
     echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
     return false;
 }
+if (isset($_POST['shiprocket']) && isset($_POST['shiprocket_email']) && isset($_POST['shiprocket_password'])) {
 
+
+    if (defined('ALLOW_MODIFICATION') && ALLOW_MODIFICATION == 0) {
+        echo '<label class="alert alert-danger">This operation is not allowed in demo panel!.</label>';
+        return false;
+    }
+    if ($permissions['settings']['update'] == 0) {
+        echo '<label class="alert alert-danger">You have no permission to update settings</label>';
+        return false;
+    }
+    $data_shiprocket = $fn->get_settings('shiprocket', true);
+
+    if (empty($data_shiprocket)) {
+        $shiprocket = $_POST['shiprocket'];
+        $shiprocket_email = $_POST['shiprocket_email'];
+        $shiprocket_email = $_POST['shiprocket_email'];
+        $webhook_token = $_POST['webhook_token'];
+        $json_data = array('shiprocket' => $shiprocket, 'shiprocket_email' => $shiprocket_email, 'shiprocket_password' => $shiprocket_password, 'webhook_token' => $webhook_token);
+        $encode_data_shiprocket = json_encode($json_data);
+        $sql = "INSERT INTO `settings`(`variable`, `value`) VALUES ('shiprocket','$encode_data_shiprocket')";
+        $db->sql($sql);
+        echo "<div class='alert alert-success'> shiprocket created successfully!</div>";
+    } else {
+        $shiprocket = $_POST['shiprocket'];
+        $shiprocket_email = $_POST['shiprocket_email'];
+        $shiprocket_password = $_POST['shiprocket_password'];
+        $webhook_token = $_POST['webhook_token'];
+        $json_data = array('shiprocket' => $shiprocket, 'shiprocket_email' => $shiprocket_email, 'shiprocket_password' => $shiprocket_password, 'webhook_token' => $webhook_token);
+        $encode_data_shiprocket = json_encode($json_data);
+        // $local_shipping = $_POST['local_shipping'];
+        $sql = "UPDATE `settings` SET `value`='$encode_data_shiprocket' WHERE `variable`='shiprocket'";
+        $db->sql($sql);
+        echo "<div class='alert alert-success'> shiprocket updated successfully!</div>";
+    }
+}
 if (isset($_POST['change_category'])) {
     if ($permissions['subcategories']['read'] == 1) {
         if ($_POST['category_id'] == '') {
@@ -59,6 +96,33 @@ if (isset($_POST['change_category'])) {
         }
     } else {
         echo "<option value=''>--No Sub Category is added--</option>";
+    }
+}
+if (isset($_POST['create_order_btn']) && !empty($_POST['create_order_btn'])) {
+
+    $order_id = $_POST['order_id'];
+    $seller_id = $_POST['select_seller_id'];
+    $pickup_location = $_POST['seller_pickup_location'];
+    $weight = $_POST['weight'];
+    $hieght = $_POST['hieght'];
+    $length = $_POST['length'];
+    $breadth = $_POST['breadth'];
+    $sub_total = $_POST['subtotal'];
+    $order_item_ids = $_POST['order_item_ids'];
+
+
+    $res = $fn->process_shiprocket($order_id, $seller_id, $pickup_location, $sub_total, $weight, $hieght, $breadth, $length, $order_item_ids);
+
+
+    if ($res['status_code'] == 1) {
+        $result['error'] = false;
+        $result['message'] = 'Order Created Successfully';
+        print_r(json_encode($result));
+    } else {
+        $result['error'] = true;
+        $result['message'] = $res['message'];
+        $result['data'] = (isset($res['errors']) && !empty($res['errors'])) ? $res['errors'] : '';
+        print_r(json_encode($result));
     }
 }
 

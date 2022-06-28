@@ -393,6 +393,7 @@ $res_logo = $db->getResult();
                         <li><a href="time-slots.php"><i class="fa fa-clock-o"></i> Time slots </a></li>
                         <li><a href="notification-settings.php"><i class="fa fa-bell-o"></i> Notification Settings</a></li>
                         <li><a href="units.php"><i class="fa fa-dot-circle-o"></i> Units</a></li>
+                        <li class=""><a href="shipping-methods.php"><i class="fa fa-rocket"></i> Shipping Method</a></li>
                         <li><a href="contact-us.php"><i class="fa fa-phone"></i> Contact Us </a></li>
                         <li><a href="privacy-policy.php"><i class="fa fa-user-secret"></i> Privacy Policy </a></li>
                         <li><a href="delivery-boy-privacy-policy.php"><i class="fa fa-exclamation-triangle"></i> Delivery Boy Privacy Policy </a></li>

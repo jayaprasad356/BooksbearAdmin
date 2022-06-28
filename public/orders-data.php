@@ -21,29 +21,92 @@ $seller_name = "";
 
 $error = array();
 
-// echo $sql = "SELECT oi.*,o.final_total as payable_total,oi.id as order_item_id,p.*,v.product_id, v.measurement,o.*,o.total as order_total,o.wallet_balance,oi.active_status as oi_active_status,u.email,u.name as uname,u.country_code,p.name as pname,(SELECT short_code FROM unit un where un.id=v.measurement_unit_id)as mesurement_unit_name 
-//         FROM `order_items` oi
-//         JOIN users u ON u.id=oi.user_id
-//         JOIN product_variant v ON oi.product_variant_id=v.id
-//         JOIN products p ON p.id=v.product_id
-//         JOIN orders o ON o.id=oi.order_id
-//     WHERE o.id=" . $ID;
-$sql = "SELECT oi.*,o.final_total as payable_total,oi.id as order_item_id,v.product_id,v.measurement_unit_id,p.cancelable_status,o.*,o.total as order_total,o.wallet_balance,oi.active_status as oi_active_status,u.email,u.name as uname,u.country_code FROM `order_items` oi JOIN users u ON u.id=oi.user_id LEFT JOIN product_variant v ON oi.product_variant_id=v.id LEFT JOIN products p ON p.id=v.product_id JOIN orders o ON o.id=oi.order_id WHERE o.id=$ID";
+$sql = "SELECT oi.*,oi.tax_amount as amount_tax,oi.tax_percentage as amount_percentage,o.final_total as payable_total,oi.id as order_item_id,v.product_id,v.measurement_unit_id,p.cancelable_status,o.*,o.total as order_total,o.wallet_balance,oi.active_status as oi_active_status,u.email,u.name as uname,u.country_code FROM `order_items` oi JOIN users u ON u.id=oi.user_id LEFT JOIN product_variant v ON oi.product_variant_id=v.id LEFT JOIN products p ON p.id=v.product_id JOIN orders o ON o.id=oi.order_id WHERE o.id=$ID";
 $db->sql($sql);
 $res = $db->getResult();
+$user_address = $res[0]['address'];
 $items = [];
 foreach ($res as $row) {
-    $data = array($row['product_id'], $row['product_variant_id'], $row['product_name'], $row['variant_name'], $row['measurement_unit_id'], $row['quantity'], $row['discounted_price'], $row['price'], $row['oi_active_status'], $row['cancelable_status'], $row['order_item_id'], $row['sub_total'], $row['tax_amount'], $row['tax_percentage'], $row['seller_id'], $row['delivery_boy_id']);
+    $data = array($row['product_id'], $row['product_variant_id'], $row['product_name'], $row['variant_name'], 
+    $row['measurement_unit_id'], $row['quantity'], $row['discounted_price'], $row['price'], $row['oi_active_status'], 
+    $row['cancelable_status'], $row['order_item_id'], $row['sub_total'], $row['tax_amount'], $row['tax_percentage'], 
+    $row['seller_id'], $row['delivery_boy_id'],$row['user_id']);
     array_push($items, $data);
 }
+$count_standard_product = 1;
 ?>
-<style>
-    @media (min-width: 992px) {
-        .col-md-3 {
-            width: 20% !important;
+    <style>
+        @media (min-width: 992px) {
+            .col-md-3 {
+                width: 20% !important;
+
+            }
         }
-    }
-</style>
+
+        .track {
+            position: relative;
+            background-color: #ddd;
+            height: 7px;
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            margin-bottom: 60px;
+            margin-top: 50px
+        }
+
+        .track .step {
+            -webkit-box-flex: 1;
+            -ms-flex-positive: 1;
+            flex-grow: 1;
+            width: 25%;
+            margin-top: -18px;
+            text-align: center;
+            position: relative
+        }
+
+        .track .step.active:before {
+            background: #45b4ff;
+        }
+
+        .track .step::before {
+            height: 7px;
+            position: absolute;
+            content: "";
+            width: 100%;
+            left: 0;
+            top: 18px
+        }
+
+        .track .step.active .icon {
+            background: #45b4ff;
+            color: #fff
+        }
+
+        .track .icon {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            position: relative;
+            border-radius: 100%;
+            background: #ddd
+        }
+
+        .track i {
+            width: 15px;
+            padding-top: 11.5px;
+        }
+
+        .track .step.active .text {
+            font-weight: 400;
+            color: #000
+        }
+
+        .track .text {
+            display: block;
+            margin-top: 7px
+        }
+    </style>
 <section class="content-header">
     <h1>Order Detail</h1>
     <?php echo isset($error['update_data']) ? $error['update_data'] : ''; ?>
@@ -125,8 +188,68 @@ foreach ($res as $row) {
                             ?>
                             <tr>
                                 <th style="width: 10px">Items</th>
+
                                 <td>
                                     <div class="container-fluid">
+                                    <div class="col-md-12">
+                                                    <h4>Standard Shipping Order items</h4><small><a data-toggle="modal" data-target="#howtomanage"> How to manage shiprocket order ?</a></small>
+                                                    <div class="modal  fade" id="howtomanage" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                                        <div class="modal-dialog modal-lg" role="document">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h5 class="modal-title" id="exampleModalLabel">How to manage shiprocket order </h5>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="container">
+                                                                        <div class="row">
+                                                                            <div class="col-md-12">
+                                                                                <h5><b>Create shiprocket order</b></h5>
+                                                                                <b>Steps:</b><br>
+                                                                                1.Select order items which you have to add in parcel and click on create order button<br>
+                                                                                <br>
+                                                                                <img src="documentation/assets/img/create-ordeer.png" alt="" style="max-width:75%;">
+                                                                                <br>
+                                                                                2.After create order generate AWB code(its unique number use for identify order) like this<br>
+                                                                                <br>
+                                                                                <img src="documentation/assets/img/awb.png" alt="" style="max-width:75%;">
+                                                                                <br>
+                                                                                3.Send request for pickup <br>
+                                                                                <br>
+                                                                                <img src="documentation/assets/img/send-pickup-request.png" alt="" style="max-width:75%;">
+                                                                                <br>
+                                                                                4.Track order <br>
+                                                                                <br>
+                                                                                <img src="documentation/assets/img/trackin.png" alt="" style="max-width:75%;">
+                                                                                <br>
+                                                                                5.Cancel order <br>
+                                                                                <br>
+                                                                                <img src="documentation/assets/img/cancel order.png" alt="" style="max-width:75%;">
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="modal-footer">
+                                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5>Standard Shipping Pending Creating orders Order items </h5>
+                                <div id="result-shiprocket"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="button" disabled class="btn btn-primary create-shiprocket" data-toggle="modal" data-target="#exampleModal">
+                                    Create Shipprocket Order
+                                </button>
+                            </div>
+                        </div>
                                         <?php $total = 0;
                                         foreach ($items as $item) {
                                         ?>
@@ -160,6 +283,8 @@ foreach ($res as $row) {
                                                         $seller_name = (!empty($seller_name)) ? $seller_name[0]['name'] : "<span class='label label-danger'>Not Assigned</span>";
                                                     }
                                                     $total += $subtotal = ($item[6] != 0 && $item[6] < $item[7]) ? ($item[6] * $item[5]) : ($item[7] * $item[5]);
+                                                    echo "<br><input type='checkbox' data-qty='$item[5]' data-order-item-id=" . $item[10] . "  data-sub-total=" . $item[11] . " name='order_items[]' class='seller_id' data-seller-id=" . $s_id . " value=" . $item[10] . ">" . "</br>";
+                                                            
                                                     echo  "</br>" . "<b>Product Id : </b>" . $item[0] . "  " . $active_status . "</br>";
                                                     if (!empty($seller_name)) {
                                                         echo " <b>Seller Name : </b>" . $seller_name . "</br>";
@@ -299,6 +424,112 @@ foreach ($res as $row) {
 
     </div>
 </section>
+<div class="modal fade " id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="" method="post" id="create_order_form">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Create Shipprocket Order Parcel</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <div class="row">
+                                <div class="col-md-4 mt-5">
+                                    <label for="" class="">seller Pickup location: </label>
+                                </div>
+                                <div class="col-md-8">
+
+                                    <input type="text" name="seller_pickup_location" class="form-control" value="" id="pickup-location">
+
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="order_id" value="<?= $_GET['id'] ?>">
+                        <div id="create_order_result">
+
+                        </div>
+                        <input type="hidden" name="order_item_ids[]" id="order_item_ids" value="'">
+                        <label for="">Total Weight of Boox</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="">Weight </label><small> Kg</small>
+                                <input type="number" name="weight" required class="form-control weight" placeholder="enter weight of parcel" id="">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="">Height </label><small> cms</small>
+                                <input type="number" name="hieght" required class="form-control" placeholder="enter weight of parcel" id="">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="">Breadth </label><small> cms</small>
+                                <input type="number" name="breadth" required class="form-control" placeholder="enter weight of parcel" id="">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="">Length</label><small> cms</small>
+                                <input type="number" name="length" required class="form-control" placeholder="enter weight of parcel" id="">
+                            </div>
+                        </div>
+                        <label for="" class="parcel_error text-danger"></label>
+
+                    </div>
+                    <input name="subtotal" type="hidden" id="subtotal">
+                    <input type="hidden" name="create_order_btn" value="1">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="close" data-dismiss="modal">Close</button>
+                        <button type="submit" id="create_order_btn" class="btn btn-success create_order_btn">Create orders</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <style>
+
+    </style>
+
+    <div class="modal fade bd-example-modal-lg" id="track_order" tabindex="-1" role="dialog" aria-labelledby="track_order" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Trak Order</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Shipment ID: <label id="show_shipment_id"></label></h6>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="current_status"></h6>
+                        </div>
+                    </div>
+
+
+                    <div class="track">
+                        <div class="step  active"> <span class="icon"> <i class="fa fa-check"></i> </span> <span class="text">Request Pickup Sended</span> </div>
+                        <div class="step  pickuped"> <span class="icon"> <i class="fa fa-user"></i> </span> <span class="text">Pickuped</span> </div>
+                        <div class="step  on-the-way"> <span class="icon"> <i class="fa fa-truck"></i> </span> <span class="text"> On the way </span> </div>
+                        <div class="step delivered"> <span class="icon"><i class="fa fa-check-square" aria-hidden="true" style="color:white;"></i></span> <span class="text">Delivered successfuly</span> </div>
+                    </div>
+                    <hr>
+
+
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-4 pt-1 shiprocket-link"></div>
+                        <div class="col-md-8"> <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 <script>
     var allowed = '<?= $allowed; ?>';
     var delivery_by = "";
@@ -347,6 +578,7 @@ foreach ($res as $row) {
             });
         }
     });
+    
 
     $(document).on('click', '.update_order_total_payable', function(e) {
         e.preventDefault();
@@ -402,6 +634,105 @@ foreach ($res as $row) {
         if (discount >= 0) {
             $("#final_total").val(Math.round((final_total + Number.EPSILON) * 100) / 100);
         }
+    });
+
+    $('.seller_id').on('click', function() {
+
+
+        var seller_id = $(this).data('seller-id');
+    
+
+        var all = $('.seller_id');
+        if ($(this).is(':checked')) {
+            $('.create-shiprocket').attr('disabled', false);
+            for (var i = 0; i < all.length; i++) {
+                if ($(all[i]).data('seller-id') == seller_id ) {
+                    if ($(all[i]).is(':checked')) {
+                        $(all[i]).addClass('checked')
+                    }
+                    $(all[i]).attr("disabled", false)
+                } else {
+                    $(all[i]).attr("disabled", true)
+                }
+            }
+        } else {
+            for (var i = 0; i < all.length; i++) {
+                if ($(all[i]).is(':checked')) {
+                    $(all[i]).removeClass("checked")
+
+                    $(all[i]).attr("disabled", false)
+                } else {
+
+                    $(all[i]).removeClass("checked")
+
+                    $(all[i]).attr("disabled", false)
+                }
+
+            }
+}
+});
+
+var weight = 0;
+    $('.create-shiprocket').on('click', function() {
+        weight = 0;
+        var all = $('.checked');
+        var temparr = [];
+        var sub_total = 0;
+        for (var i = 0; i < all.length; i++) {
+            if ($(all[i]).is(':checked')) {
+                var seller_id = $(all[i]).data('seller-id');
+                $('#create_order_result').html('<input type="hidden" name="select_seller_id" id="create_order_seller_id" value="' + seller_id + '">')
+                // temparr[$(all[i]).data('product-id')] = $(all[i]).data('product-name');
+                if (seller_id != "") {
+                    temparr = [...temparr, $(all[i]).data('order-item-id')]
+                    sub_total += parseFloat($(all[i]).data('sub-total'))
+                    weight = 0 ;
+                }
+            }
+        }
+
+        $('#pickup-location').val('')
+        $('#order_item_ids').attr('value', temparr);
+        $('#subtotal').attr('value', sub_total);
+        $('.weight').attr('value', weight);
+    });
+</script>
+<script>
+        $('#create_order_form').on('submit', function(e) {
+        e.preventDefault();
+        var formData = new FormData(document.getElementById("create_order_form"));
+        $.ajax({
+            type: 'POST',
+            url: "public/db-operation.php",
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            dataType: "json",
+            beforeSend: function() {
+                $('.create_order_btn').html('Please Wait....').attr('disabled', true);
+            },
+            error: function(request, error) {
+                console.log(request)
+            },
+            success: function(data) {
+                if (data.error == false) {
+                    $('#close').trigger('click');
+                    $('.create_order_btn').html('Create Order').attr('disabled', false);
+                    $('#result-shiprocket').html('<h4><label class="label m-5 label-success">' + data.message + '</label></h4>')
+                    //location.reload();
+                } else {
+                    $('#close').trigger('click');
+                    $('.create_order_btn').html('Create Order').attr('disabled', false);
+                    $('#result-shiprocket').html('<h4><label class="label m-5 label-danger">' + data.message + '</label></h4>')
+                    data.data.forEach(Element => {
+                        $('#result-shiprocket').append('<label class="label m-5 label-danger">' + Element + '</label>')
+
+                    });
+                }
+            }
+        });
+
     });
 </script>
 

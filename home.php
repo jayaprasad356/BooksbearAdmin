@@ -2,6 +2,7 @@
 
 include_once('includes/custom-functions.php');
 include_once('includes/functions.php');
+include_once('library/shiprocket.php');
 $function = new custom_functions;
 
 // set time for session timeout
