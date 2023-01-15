@@ -245,7 +245,7 @@ class custom_functions
             return false;
         }
     }
-    public function process_shiprocket($order_id, $seller_id, $pickup_location, $sub_total, $weight, $height, $breadth, $length, $order_items_ids)
+    public function process_shiprocket($order_id, $seller_id, $pickup_location, $pickup_pincode, $sub_total, $weight, $height, $breadth, $length, $order_items_ids)
     {
 
         $fn = new functions();
@@ -254,32 +254,36 @@ class custom_functions
         $order_items_ids = implode(',', $order_items_ids);
 
         $sr_subtotal = $sr_weight = $sr_height = $sr_length = $sr_breadth = 0;
-        $sql = 'SELECT oi.id as item_id,oi.quantity,p.seller_id,p.id,pv.weight,p.name,p.standard_shipping,pv.price,p.pickup_location  FROM `order_items` oi left JOIN product_variant pv on oi.product_variant_id=pv.id left join products p on p.id=pv.product_id WHERE  oi.id    in(' . $order_items_ids . ') and oi.order_id=' . $order_id;
+        $sql = 'SELECT oi.id as item_id,oi.quantity,p.seller_id,p.id,p.name,pv.price  FROM `order_items` oi left JOIN product_variant pv on oi.product_variant_id=pv.id left join products p on p.id=pv.product_id WHERE  oi.id    in(' . $order_items_ids . ') and oi.order_id=' . $order_id;
         $this->db->sql($sql);
         $order_res = $this->db->getResult();
+
+        $sql = "SELECT * FROM orders WHERE id=" . $order_id;
+        $this->db->sql($sql);
+        $order_data = $this->db->getResult();
+        $user_id = $order_data[0]['user_id'];
+        $address_id = $order_data[0]['address_id'];
 
         $sql = 'SELECT o.user_id,o.payment_method,o.pincode_id,o.area_id,CASE WHEN o.pincode_id=0 THEN (Select ua.pincode from user_addresses ua where ua.id=o.address_id) ELSE (Select pin.pincode from pincodes pin where pin.id=o.pincode_id) END AS pincode,CASE WHEN o.area_id=0 THEN (Select ua.area from user_addresses ua where ua.id=o.address_id) ELSE (Select a.name from area a where a.id=o.area_id) END AS area from orders o where id=' . $order_id;
         $this->db->sql($sql);
         $pincode = $this->db->getResult();
 
-        $sql = 'SELECT (Select u.name from users u where u.id=ua.user_id) as user_name,(Select u.email from users u where u.id=ua.user_id) as email,ua.mobile,ua.address,ua.state,ua.country,(select c.name from cities c where c.id=ua.city_id) as city from user_addresses ua where ua.user_id=' . $pincode[0]['user_id'] . ' AND ua.pincode_id=' . $pincode[0]['pincode_id'] . ' AND ua.area_id=' . $pincode[0]['area_id'];
+        $sql = 'SELECT (Select u.name from users u where u.id=ua.user_id) as user_name,(Select u.email from users u where u.id=ua.user_id) as email,ua.mobile,ua.address,ua.state,ua.country,ua.city,ua.area,ua.pincode from user_addresses ua where ua.id=' . $address_id;
         $this->db->sql($sql);
         $users_details = $this->db->getResult();
         $payment_method = (isset($pincode[0]['payment_method']) && !empty($pincode[0]['payment_method']) && $pincode[0]['payment_method'] == "COD") ? 0 : 1;
         $order_id_create_order = $order_id;
         $index = 0;
         foreach ($order_res as  $items) {
-            if ($items['standard_shipping']) {
-                $slug = $items['item_id'] . " " . $order_id . " " . $index;
-                $order_items[] = array('name' => $items['name'], 'sku' => $fn->slugify($slug), 'units' => $items['quantity'], 'selling_price' => $items['price']);
-                $order_id_create_order .= '-' . $items['id'];
-                $index++;
-            }
+            $slug = $items['item_id'] . " " . $order_id . " " . $index;
+            $order_items[] = array('name' => $items['name'], 'sku' => $fn->slugify($slug), 'units' => $items['quantity'], 'selling_price' => $items['price']);
+            $order_id_create_order .= '-' . $items['id'];
+            $index++;
         }
         $sql = 'SELECT pin_code from pickup_locations where pickup_location="' . $pickup_location . '"';
         $this->db->sql($sql);
         $pickup_location_pincode = $this->db->getResult();
-        $data = array('pickup_location' => $pickup_location_pincode[0]['pin_code'], 'delivery_pincode' => $pincode[0]['pincode'], 'weight' => $weight, 'cod' => ($payment_method == 0) ? '1' : '0');
+        $data = array('pickup_location' => $pickup_pincode, 'delivery_pincode' => $users_details[0]['pincode'], 'weight' => $weight, 'cod' => ($payment_method == 0) ? '1' : '0');
         $check_deliveribility = $shiprocket->check_serviceability($data);
         $get_currier_id = $this->shiprocket_recomended_data($check_deliveribility);
         $data = array(
@@ -288,10 +292,10 @@ class custom_functions
             'pickup_location' => $pickup_location,
             'billing_customer_name' => $users_details[0]['user_name'],
             'billing_last_name' => $users_details[0]['user_name'],
-            'billing_address' => $pincode[0]['area'],
+            'billing_address' => $users_details[0]['address'],
             'billing_phone' => $users_details[0]['mobile'],
             'billing_city' => $users_details[0]['city'],
-            'billing_pincode' => $pincode[0]['pincode'],
+            'billing_pincode' => $users_details[0]['pincode'],
             'billing_state' => $users_details[0]['state'],
             'billing_country' => $users_details[0]['country'],
             'billing_email' => $users_details[0]['email'],
@@ -304,7 +308,9 @@ class custom_functions
             'height' => $height,
             'weight' => $weight
         );
+    
         $res = $shiprocket->create_order($data);
+        
 
         if ($res['status_code'] == 1 || !empty($res['order_id'])) {
             $item_id = 0;
@@ -312,11 +318,9 @@ class custom_functions
             $shipment_id = $res['shipment_id'];
             $courier_company_id = $get_currier_id['courier_company_id'];
             foreach ($order_res as  $items) {
-                if ($items['standard_shipping']) {
-                    $item_id = $items['item_id'];
-                    $sql = "INSERT INTO `order_trackings` (`order_id`,`order_item_id`,`shiprocket_order_id`,`shipment_id`,`courier_company_id`) VALUES ('$order_id','$item_id','$shiprocket_order_id','$shipment_id','$courier_company_id')";
-                    $this->db->sql($sql);
-                }
+                $item_id = $items['item_id'];
+                $sql = "INSERT INTO `order_trackings` (`order_id`,`order_item_id`,`shiprocket_order_id`,`shipment_id`,`courier_company_id`) VALUES ('$order_id','$item_id','$shiprocket_order_id','$shipment_id','$courier_company_id')";
+                $this->db->sql($sql);
             }
             return $res;
         } elseif ($res['status_code'] != 1 || !empty($res['status_code'])) {
@@ -329,6 +333,27 @@ class custom_functions
 
         print_r($res);
     }
+    public function shiprocket_recomended_data($shiprocket_data)
+    {
+        $result = array();
+        if (isset($shiprocket_data['data']['recommended_courier_company_id'])) {
+            foreach ($shiprocket_data['data']['available_courier_companies'] as  $rd) {
+                if ($shiprocket_data['data']['recommended_courier_company_id'] == $rd['courier_company_id']) {
+                    $result = $rd;
+                    break;
+                }
+            }
+        } else {
+            foreach ($shiprocket_data['data']['available_courier_companies'] as  $rd) {
+                if ($rd['courier_company_id']) {
+                    $result = $rd;
+                    break;
+                }
+            }
+        }
+        return $result;
+    }
+
     public function get_wallet_balance($id, $table_name)
     {
         $sql = "SELECT balance FROM $table_name WHERE id=" . $id;

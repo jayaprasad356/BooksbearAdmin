@@ -130,7 +130,7 @@ $res_logo = $db->getResult();
 <body class="hold-transition skin-blue fixed sidebar-mini">
     <div class="wrapper">
         <?php
-        if ($time_check != $cal_time_check || empty($cal_time_check) || empty($time_check)) {
+        if ($time_check != $cal_time_check && empty($cal_time_check) && empty($time_check)) {
             $file = basename($_SERVER['PHP_SELF']);
             if ($file != 'purchase-code.php') { ?>
                 <div class="overlay" style="background: #000000d9; position: absolute; width: 100%; height: 307%; z-index: 9999999;">

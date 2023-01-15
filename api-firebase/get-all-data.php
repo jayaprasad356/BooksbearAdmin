@@ -253,6 +253,7 @@ foreach ($result as $row) {
     $tempRow['id'] = $row['id'];
     $tempRow['name'] = $row['name'];
     $tempRow['store_name'] = $row['store_name'];
+    $tempRow['slug'] = $row['slug'];
     $tempRow['email'] = $row['email'];
     $tempRow['mobile'] = $row['mobile'];
     $tempRow['balance'] = strval(ceil($row['balance']));

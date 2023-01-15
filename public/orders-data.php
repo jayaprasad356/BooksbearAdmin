@@ -446,6 +446,16 @@ $count_standard_product = 1;
 
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-4 mt-5">
+                                    <label for="" class="">seller Pickup pincode: </label>
+                                </div>
+                                <div class="col-md-8">
+
+                                    <input type="number" name="seller_pickup_pincode" class="form-control" value="" id="pickup-pincode">
+
+                                </div>
+                            </div>
                         </div>
                         <input type="hidden" name="order_id" value="<?= $_GET['id'] ?>">
                         <div id="create_order_result">
@@ -710,9 +720,11 @@ var weight = 0;
             processData: false,
             dataType: "json",
             beforeSend: function() {
+                
                 $('.create_order_btn').html('Please Wait....').attr('disabled', true);
             },
             error: function(request, error) {
+                alert(request.responseText);
                 console.log(request)
             },
             success: function(data) {

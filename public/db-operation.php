@@ -103,6 +103,7 @@ if (isset($_POST['create_order_btn']) && !empty($_POST['create_order_btn'])) {
     $order_id = $_POST['order_id'];
     $seller_id = $_POST['select_seller_id'];
     $pickup_location = $_POST['seller_pickup_location'];
+    $pickup_pincode = $_POST['seller_pickup_pincode'];
     $weight = $_POST['weight'];
     $hieght = $_POST['hieght'];
     $length = $_POST['length'];
@@ -111,7 +112,7 @@ if (isset($_POST['create_order_btn']) && !empty($_POST['create_order_btn'])) {
     $order_item_ids = $_POST['order_item_ids'];
 
 
-    $res = $fn->process_shiprocket($order_id, $seller_id, $pickup_location, $sub_total, $weight, $hieght, $breadth, $length, $order_item_ids);
+    $res = $fn->process_shiprocket($order_id, $seller_id, $pickup_location,$pickup_pincode, $sub_total, $weight, $hieght, $breadth, $length, $order_item_ids);
 
 
     if ($res['status_code'] == 1) {

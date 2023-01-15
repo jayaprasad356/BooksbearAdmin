@@ -185,7 +185,7 @@ if (isset($_POST['place_order']) && isset($_POST['user_id']) && !empty($_POST['p
     /* insert data into order table */
     
     
-    $sql = "INSERT INTO `orders`(`user_id`,`otp`,`mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `promo_code`,`promo_discount`, `final_total`, `payment_method`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`,`pincode_id`,`area_id`,`friends_code`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$order_total_tax_amt','$order_total_tax_per','$walletvalue','$promo_code','$promo_discount', '$final_total','$payment_method','$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from','$pincode_id','$area_id','$fnd_code')";
+    $sql = "INSERT INTO `orders`(`user_id`,`otp`,`mobile`,`order_note`, `total`, `delivery_charge`, `tax_amount`, `tax_percentage`, `wallet_balance`, `promo_code`,`promo_discount`, `final_total`, `payment_method`, `address`, `latitude`, `longitude`, `delivery_time`, `status`, `active_status`,`order_from`,`pincode_id`,`area_id`,`address_id`,`friends_code`) VALUES ('$user_id','$otp_number','$mobile','$order_note','$total','$delivery_charge','$order_total_tax_amt','$order_total_tax_per','$walletvalue','$promo_code','$promo_discount', '$final_total','$payment_method','$address','$latitude','$longitude','$delivery_time','$order_status','$active_status','$order_from','$pincode_id','$area_id','$address_id','$fnd_code')";
     
     $db->sql($sql);
     $sql = "SELECT id FROM orders where user_id=$user_id and active_status = '$active_status' order by id desc limit 1";
